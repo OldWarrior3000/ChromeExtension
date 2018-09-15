@@ -1,0 +1,24 @@
+  {
+    "name": "HansExtension",
+    "version": "1.0",
+    "description": "Build an Extension!",
+    "permissions": [
+        "activeTab",
+        "declarativeContent"
+    ],
+     "content_scripts": [
+        {
+            "matches": [
+                "http://*/*",
+                "https://*/*"
+            ],
+            "css": [
+                "imageMarker.css"
+            ],
+            "js": [
+                "imageMarker.js"
+            ]
+        }
+    ],
+    "manifest_version": 2
+  }
