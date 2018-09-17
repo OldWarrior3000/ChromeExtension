@@ -21,8 +21,8 @@ document.addEventListener('mousemove', function (e) {
             //     "\nNodeName: " + srcElement.nodeName +
             //     "\nsrcElement: " + srcElement +
             //     "\nParentId" + srcElement.parentElement.id;
-            var PageObjects = retrieveWindowVariables(["PageObjects"]);
-            var element = PageObjects.all().filter(x => x.uniqueId === srcElement.id)[0];            
+            var objects = retrieveWindowVariables([srcElement.id]);
+            var element = objects.pageObject;
             var output = "Type: " + element.type +
                 "\nCaption: " + element.caption +
                 "\nUrl: " + element.metadataUrl +
@@ -36,13 +36,14 @@ document.addEventListener('mousemove', function (e) {
 
 
 
-function retrieveWindowVariables(variables) {
+function retrieveWindowVariables(ids) {
     var ret = {};
 
     var scriptContent = "";
-    for (var i = 0; i < variables.length; i++) {
-        var currVariable = variables[i];
-        scriptContent += "if (typeof " + currVariable + " !== 'undefined') document.getElementsByTagName('body')[0].setAttribute('tmp_" + currVariable + "', JSON.stringify(" + currVariable + "));\n";
+    for (var i = 0; i < ids.length; i++) {
+        var currVariable = ids[i];
+        scriptContent += "if (typeof PageObjects !== 'undefined') document.getElementsByTagName('body')[0].setAttribute('tmp_" + currVariable + "', JSON.stringify(PageObjects.all()[0]));\n";
+        // scriptContent += "if (typeof PageObjects !== 'undefined') document.getElementsByTagName('body')[0].setAttribute('tmp_" + currVariable + "', JSON.stringify(PageObjects.all().filter(x => x.uniqueId === '" + currVariable + "')));\n";
         //scriptContent += "if (typeof " + currVariable + " !== 'undefined') document.getElementsByTagName('body')[0].setAttribute('tmp_" + currVariable + "', JSON.stringify(" + currVariable + "));\n";
     }
 
@@ -51,10 +52,9 @@ function retrieveWindowVariables(variables) {
     script.appendChild(document.createTextNode(scriptContent));
     (document.body || document.head || document.documentElement).appendChild(script);
 
-    for (var i = 0; i < variables.length; i++) {
-        var currVariable = variables[i];
-        ret[currVariable] = JSON.parse(document.getElementsByTagName("body")[0].getAttribute("tmp_" + currVariable));
-        //document.getElementsByTagName("body")[0].removeAttribute("tmp_" + currVariable);
+    for (var i = 0; i < ids.length; i++) {
+        var currVariable = ids[i];
+        ret['pageObject'] = JSON.parse(document.getElementsByTagName("body")[0].getAttribute("tmp_" + currVariable));        
     }
 
     //script.parentNode.removeChild(script);
