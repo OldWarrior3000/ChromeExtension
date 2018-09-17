@@ -57,7 +57,7 @@ function retrieveWindowVariables(ids) {
         ret['pageObject'] = JSON.parse(document.getElementsByTagName("body")[0].getAttribute("tmp_" + currVariable));        
     }
 
-    //script.parentNode.removeChild(script);
+    script.parentNode.removeChild(script);
 
     return ret;
 }
