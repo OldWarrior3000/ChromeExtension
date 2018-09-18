@@ -1,6 +1,3 @@
-// Unique ID for the className.
-var MOUSE_VISITED_CLASSNAME = 'crx_mouse_visited';
-
 // Previous dom, that we want to track, so we can remove the previous styling.
 var prevDOM = null;
 
@@ -10,24 +7,16 @@ document.addEventListener('mousemove', function (e) {
 
     // Lets check if our underlying element is a IMG.
     if (prevDOM != srcElement) {
-        var print = srcElement.id !== 'null' && srcElement.id !== '';    
+        var print = srcElement !== 'null' && srcElement.textContent !== '';    
 
         if (print) {
-            // var d = new Date();
-            // var n = d.getMilliseconds();
+            var object = retrieveWindowVariable(srcElement.textContent);            
+            if ( (object === null )  || (typeof object.pageObject === null) ){
+                return;
+            } 
 
-            // var output = "Millies: " + n +
-            //     "CurrentSrc: " + srcElement.currentSrc +
-            //     "\nNodeName: " + srcElement.nodeName +
-            //     "\nsrcElement: " + srcElement +
-            //     "\nParentId" + srcElement.parentElement.id;
-            var objects = retrieveWindowVariables([srcElement.id]);
-            var element = objects.pageObject;
-            var output = "Type: " + element.type +
-                "\nCaption: " + element.caption +
-                "\nUrl: " + element.metadataUrl +
-                "\nParentId" + element.uniqueId;
-            console.log(output);
+            var element = object.pageObject;       
+            console.log(element);
         }
         prevDOM = srcElement;
 
@@ -42,9 +31,7 @@ function retrieveWindowVariables(ids) {
     var scriptContent = "";
     for (var i = 0; i < ids.length; i++) {
         var currVariable = ids[i];
-        scriptContent += "if (typeof PageObjects !== 'undefined') document.getElementsByTagName('body')[0].setAttribute('tmp_" + currVariable + "', JSON.stringify(PageObjects.all()[0]));\n";
-        // scriptContent += "if (typeof PageObjects !== 'undefined') document.getElementsByTagName('body')[0].setAttribute('tmp_" + currVariable + "', JSON.stringify(PageObjects.all().filter(x => x.uniqueId === '" + currVariable + "')));\n";
-        //scriptContent += "if (typeof " + currVariable + " !== 'undefined') document.getElementsByTagName('body')[0].setAttribute('tmp_" + currVariable + "', JSON.stringify(" + currVariable + "));\n";
+        scriptContent += "if (typeof PageObjects !== 'undefined') document.getElementsByTagName('body')[0].setAttribute('tmp_" + currVariable + "', JSON.stringify(PageObjects.find({caption: \"" + currVariable + "\"})));\n";
     }
 
     var script = document.createElement('script');
@@ -61,3 +48,38 @@ function retrieveWindowVariables(ids) {
 
     return ret;
 }
+
+function retrieveWindowVariable(caption) {
+    var ret = {};
+    var id = guid();
+    // Remove all special characters from the input variable
+    caption = caption.replace(/[^a-zA-Z ]/g, "");
+    var scriptContent = "if (typeof PageObjects !== 'undefined') document.getElementsByTagName('body')[0].setAttribute('"+ id + "', JSON.stringify(PageObjects.find({caption: \"" + caption + "\"})));\n";
+    
+    try {
+        var script = document.createElement('script');
+        script.id = 'tmpScript';
+        script.appendChild(document.createTextNode(scriptContent));
+        (document.body || document.head || document.documentElement).appendChild(script);
+        
+        ret['pageObject'] = JSON.parse(document.getElementsByTagName("body")[0].getAttribute(id));        
+    }catch(ex) {
+        return null;
+    }finally{
+        if (script != null ) {
+            script.parentNode.removeChild(script);
+        }        
+    }        
+
+    return ret;
+}
+
+
+function guid() {
+    function s4() {
+      return Math.floor((1 + Math.random()) * 0x10000)
+        .toString(16)
+        .substring(1);
+    }
+    return '_' + s4() + s4() + '_' + s4() + '_' + s4() + '_' + s4() + '_' + s4() + s4() + s4();
+  }
