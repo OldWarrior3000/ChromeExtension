@@ -23,32 +23,6 @@ document.addEventListener('mousemove', function (e) {
     }
 }, false);
 
-
-
-function retrieveWindowVariables(ids) {
-    var ret = {};
-
-    var scriptContent = "";
-    for (var i = 0; i < ids.length; i++) {
-        var currVariable = ids[i];
-        scriptContent += "if (typeof PageObjects !== 'undefined') document.getElementsByTagName('body')[0].setAttribute('tmp_" + currVariable + "', JSON.stringify(PageObjects.find({caption: \"" + currVariable + "\"})));\n";
-    }
-
-    var script = document.createElement('script');
-    script.id = 'tmpScript';
-    script.appendChild(document.createTextNode(scriptContent));
-    (document.body || document.head || document.documentElement).appendChild(script);
-
-    for (var i = 0; i < ids.length; i++) {
-        var currVariable = ids[i];
-        ret['pageObject'] = JSON.parse(document.getElementsByTagName("body")[0].getAttribute("tmp_" + currVariable));        
-    }
-
-    script.parentNode.removeChild(script);
-
-    return ret;
-}
-
 function retrieveWindowVariable(caption) {
     var ret = {};
     var id = guid();
@@ -73,7 +47,6 @@ function retrieveWindowVariable(caption) {
 
     return ret;
 }
-
 
 function guid() {
     function s4() {
